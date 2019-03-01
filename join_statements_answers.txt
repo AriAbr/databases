@@ -1,0 +1,191 @@
+1. How do you find related data held in two separate data tables?
+
+By using a JOIN statement such as the following:
+  SELECT *
+  FROM table1
+  JOIN table2
+  ON table1.column1 = table2.column1;
+
+2. Explain, in your own words, the difference between an INNER JOIN, LEFT OUTER
+JOIN, and RIGHT OUTER JOIN. Give a real-world example for each.
+
+INNER JOIN returns only the rows that match between the two tables. It could be
+used to find information on students that passed a given test. The table with
+the students scores would be joined with a table with the students information.
+
+LEFT OUTER JOIN returns the same as INNER JOIN, plus a row for each row in the
+first table that does not have a match in the second table. It could be used to
+generate a complete list of countries, plus information on their US consulates
+for those who have one.
+
+RIGHT OUTER JOIN returns the same as INNER JOIN, plus a row for each row in the
+second table that does not have a match in the first table. It could be used to
+generate a list of trees in a given area of a forest mapped onto a list of all
+the kinds of trees that grow in that forest.
+
+3. Define primary key and foreign key. Give a real-world example for each.
+
+A primary key is a value in a table that is unique for each row, such as a
+student id in a table listing each student's information. A foreign key
+references a primary key in another table and is not necessarily unique to each
+row, such as a student id in a table listing all absences in a class.
+
+4 Define aliasing.
+
+Aliasing allows you to give a given table a nickname to be used throughout a
+query.
+
+5. Change this query so that you are using aliasing:
+      SELECT p.name, c.salary, c.vacation_days
+        FROM professor AS p
+        JOIN compensation AS c
+        ON p.id = c.professor_id;
+
+6. Why would you use a NATURAL JOIN? Give a real-world example.
+
+NATURAL JOIN automatically detects all columns shared between two columns
+and performs an INNER JOIN using those columns to detect matches. It could be
+used to join a table containing student information with another table
+containing parent information to generate a table with the combined information
+of each student and their parents. In this case, columns such as home address
+and home phone could be used to match the rows.
+
+7. Using this Employee schema and data, write queries to find the following
+information:
+List all employees and all shifts.
+
+  SELECT *
+    FROM employees AS e
+    LEFT OUTER JOIN scheduled_shifts AS ss
+    ON e.id = ss.employee_id
+    FULL JOIN shifts AS sh
+    ON ss.shift_id = sh.id;
+
+
+8. Using this Adoption schema and data, please write queries to retrieve the
+following information and include the results:
+
+- Create a list of all volunteers. If the volunteer is fostering a dog, include
+each dog as well.
+
+    SELECT *
+        FROM volunteers AS v
+        LEFT OUTER JOIN dogs AS d
+        ON v.foster_dog_id = d.id;
+
+| id  | first_name | last_name  | address                    | phone_number | available_to_foster | foster_dog_id | id    | name      | gender | age | weight | breed              | intake_date              | in_foster |
+| --- | ---------- | ---------- | -------------------------- | ------------ | ------------------- | ------------- | ----- | --------- | ------ | --- | ------ | ------------------ | ------------------------ | --------- |
+| 2   | Rubeus     | Hagrid     | 1 Edge of Forbidden Forest | 256-667-2378 | true                | 10002         | 10002 | Munchkin  | F      | 0   | 8      | dachsund chihuahua | 2017-01-13T00:00:00.000Z |           |
+| 5   | Marjorie   | Dursley    | 1990 Next Door to Fubster  | 463-528-2253 | true                | 10006         | 10006 | Marmaduke | M      | 7   | 150    | great dane         | 2016-03-22T00:00:00.000Z |           |
+| 4   | Sirius     | Black      | 12 Grimmauld Place         | 878-666-4663 | true                |               |       |           |        |     |        |                    |                          |           |
+| 3   | Remus      | Lupin      | 12 Grimmauld Place         | 627-283-3771 | true                |               |       |           |        |     |        |                    |                          |           |
+| 1   | Albus      | Dumbledore | 99 Godric's Hollow         | 843-746-3649 | false               |               |       |           |        |     |        |                    |                          |           |
+
+
+- The cat's name, adopter's name, and adopted date for each cat adopted within
+the past month to be displayed as part of the "Happy Tail" social media
+promotion which posts recent successful adoptions.
+
+    SELECT c.name, a.first_name, a.last_name, c.adoption_date
+      FROM cats AS c
+      JOIN cat_adoptions AS ca
+      ON c.id = ca.cat_id
+        JOIN adopters AS a
+        ON ca.adopter_id = a.id
+      WHERE ca.date > now() - interval '30 days';
+
+| name     | first_name | last_name | adoption_date |
+| -------- | ---------- | --------- | ------------- |
+| Mushi    | Arabella   | Figg      |               |
+| Victoire | Argus      | Filch     |               |
+
+- Create a list of adopters who have not yet chosen a dog to adopt.
+
+    SELECT *
+        FROM adopters AS a
+        LEFT OUTER JOIN dog_adoptions AS da
+        ON a.id = da.adopter_id
+        WHERE da.adopter_id IS NULL;
+
+| id  | first_name | last_name | address             | phone_number | adopter_id | dog_id | date | fee |
+| --- | ---------- | --------- | ------------------- | ------------ | ---------- | ------ | ---- | --- |
+| 1   | Hermione   | Granger   | 32 Granger's Street | 676-464-7837 |            |        |      |     |
+| 2   | Arabella   | Figg      | 4 Wisteria Walk     | 843-228-5239 |            |        |      |     |
+
+
+- Lists of all cats and all dogs who have not been adopted.
+
+    SELECT c.name
+      FROM cats AS c
+      LEFT OUTER JOIN cat_adoptions AS ca
+      ON c.id = ca.cat_id
+      WHERE ca.adopter_id IS NULL
+    UNION
+    SELECT d.name
+      FROM dogs AS d
+      LEFT OUTER JOIN dog_adoptions AS da
+      ON d.id = da.dog_id
+      WHERE da.adopter_id IS NULL;
+
+| name      |
+| --------- |
+| Lassie    |
+| Boujee    |
+| Marmaduke |
+| Seashell  |
+| Munchkin  |
+| Nala      |
+| Marley    |
+
+
+- The name of the person who adopted Rosco.
+
+    SELECT a.first_name, a.last_name
+    	FROM adopters AS a
+    	JOIN dog_adoptions AS da
+        ON a.id = da.adopter_id
+        JOIN dogs AS d
+        ON da.dog_id = d.id
+        WHERE d.name = 'Rosco';
+
+| first_name | last_name |
+| ---------- | --------- |
+| Argus      | Filch     |
+
+Using this Library schema and data, write queries applying the following
+scenarios and include the results:
+
+- To determine if the library should buy more copies of a given book, please
+provide the names and position, in order, of all of the patrons with a hold
+(request for a book with all copies checked out) on "Advanced Potion-Making".
+
+    SELECT p.name, h.rank
+      FROM holds AS h
+      JOIN patrons As p
+      ON p.id = h.patron_id
+        JOIN books AS b
+        ON h.isbn = b.isbn
+      WHERE b.title = 'Advanced Potion-Making'
+      ORDER BY h.rank ASC;
+
+| name           | rank |
+| -------------- | ---- |
+| Terry Boot     | 1    |
+| Cedric Diggory | 2    |
+
+
+- List all of the library patrons. If they have one or more books checked out,
+list the books with the patrons.
+
+    SELECT p.name, b.title
+      FROM patrons AS p
+      JOIN transactions As t
+      ON p.id = t.patron_id
+        JOIN books AS b
+        ON t.isbn = b.isbn
+      WHERE t.checked_in_date IS NULL;
+
+| name           | title                                   |
+| -------------- | --------------------------------------- |
+| Terry Boot     | Advanced Potion-Making                  |
+| Cedric Diggory | Fantastic Beasts and Where to Find Them |
