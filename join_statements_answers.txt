@@ -179,13 +179,15 @@ list the books with the patrons.
 
     SELECT p.name, b.title
       FROM patrons AS p
-      JOIN transactions As t
-      ON p.id = t.patron_id
-        JOIN books AS b
-        ON t.isbn = b.isbn
-      WHERE t.checked_in_date IS NULL;
+      LEFT OUTER JOIN transactions AS t
+      ON t.patron_id = p.id AND t.checked_in_date IS NULL
+      LEFT OUTER JOIN books AS b
+      ON t.isbn = b.isbn;
 
-| name           | title                                   |
-| -------------- | --------------------------------------- |
-| Terry Boot     | Advanced Potion-Making                  |
-| Cedric Diggory | Fantastic Beasts and Where to Find Them |
+| name             | title                                   |
+| ---------------- | --------------------------------------- |
+| Hermione Granger |                                         |
+| Terry Boot       | Advanced Potion-Making                  |
+| Padma Patil      |                                         |
+| Cho Chang        |                                         |
+| Cedric Diggory   | Fantastic Beasts and Where to Find Them |
